@@ -31,7 +31,21 @@ describe Oystercard do
       subject.initialise(balance_limit)
       expect(subject.deduct(30)).to eq(subject.balance)
     end
+  end
 
+  describe 'touch in and out' do
+    
+    it { is_expected.to respond_to(:in_journey?) }
+
+    it "changes in_travel status to true" do
+      subject.touch_in
+      expect(subject.in_journey?).to eq(subject.in_travel)
+    end
+
+    it "changes in_travel status to false" do
+      subject.touch_out
+      expect(subject.in_journey?).to eq(subject.in_travel)
+    end
 
 
   end
