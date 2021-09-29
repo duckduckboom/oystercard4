@@ -2,11 +2,13 @@ require "oystercard"
 
 describe Oystercard do
 
+  let(:subject) {described_class.new(0)}
+
   balance_limit = Oystercard::BALANCE_LIMIT
   minimum_balance = Oystercard::MINIMUM_BALANCE
 
-  it "intialise card balance" do
-      expect(subject.initialise(0)).to eq(0)
+  it "initialise card with 0 balance" do
+    expect(subject.balance).to eq(0)
   end
 
   describe '#top_up' do
@@ -14,12 +16,10 @@ describe Oystercard do
     it { is_expected.to respond_to(:top_up).with(1).argument }
 
     it "adds an amount to the balance" do
-      subject.initialise(0)
       expect(subject.top_up(10)).to eq(subject.balance)
     end  
 
     it "refuses to top-up above balance limit" do
-      subject.initialise(0)
       expect(subject.top_up(balance_limit + 1)).to eq("Card limit of #{balance_limit} will be exceeded.") 
     end
   end
@@ -29,7 +29,7 @@ describe Oystercard do
     it { is_expected.to respond_to(:deduct).with(1).argument }
     
     it "deducts fare from card balance" do
-      subject.initialise(balance_limit)
+      subject = Oystercard.new(balance_limit)
       expect(subject.deduct(30)).to eq(subject.balance)
     end
   end
@@ -39,8 +39,8 @@ describe Oystercard do
     it { is_expected.to respond_to(:in_journey?) }
 
     it "changes in_travel status to true" do
-      subject.initialise(minimum_balance + 1)
-        subject.touch_in
+      subject = Oystercard.new(minimum_balance + 1)
+      subject.touch_in
       expect(subject.in_journey?).to eq(subject.in_travel)
     end
 
@@ -50,8 +50,8 @@ describe Oystercard do
     end
 
     it "raises error is balance is too low" do
-        subject.initialise(minimum_balance - 1)
-        expect { subject.touch_in }.to raise_error "Not enough balance to travel."
+      subject = Oystercard.new(minimum_balance - 1)
+      expect { subject.touch_in }.to raise_error "Not enough balance to travel."
     end
 
   end
