@@ -3,6 +3,7 @@ require "oystercard"
 describe Oystercard do
 
   balance_limit = Oystercard::BALANCE_LIMIT
+  minimum_balance = Oystercard::MINIMUM_BALANCE
 
   it "intialise card balance" do
       expect(subject.initialise(0)).to eq(0)
@@ -38,7 +39,8 @@ describe Oystercard do
     it { is_expected.to respond_to(:in_journey?) }
 
     it "changes in_travel status to true" do
-      subject.touch_in
+      subject.initialise(minimum_balance + 1)
+        subject.touch_in
       expect(subject.in_journey?).to eq(subject.in_travel)
     end
 
@@ -47,6 +49,10 @@ describe Oystercard do
       expect(subject.in_journey?).to eq(subject.in_travel)
     end
 
+    it "raises error is balance is too low" do
+        subject.initialise(minimum_balance - 1)
+        expect { subject.touch_in }.to raise_error "Not enough balance to travel."
+    end
 
   end
 
