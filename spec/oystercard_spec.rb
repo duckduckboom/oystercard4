@@ -6,6 +6,7 @@ describe Oystercard do
 
   balance_limit = Oystercard::BALANCE_LIMIT
   minimum_balance = Oystercard::MINIMUM_BALANCE
+  minimum_fare = Oystercard::MINIMUM_FARE
 
   it "initialise card with 0 balance" do
     expect(subject.balance).to eq(0)
@@ -24,15 +25,15 @@ describe Oystercard do
     end
   end
 
-  describe 'deduct balance' do
+  # describe 'deduct balance' do
 
-    it { is_expected.to respond_to(:deduct).with(1).argument }
+  #   it { is_expected.to respond_to(:deduct).with(1).argument }
     
-    it "deducts fare from card balance" do
-      subject = Oystercard.new(balance_limit)
-      expect(subject.deduct(30)).to eq(subject.balance)
-    end
-  end
+  #   it "deducts fare from card balance" do
+  #     subject = Oystercard.new(balance_limit)
+  #     expect(subject.deduct(30)).to eq(subject.balance)
+  #   end
+  # end
 
   describe 'touch in and out' do
     
@@ -52,6 +53,11 @@ describe Oystercard do
     it "raises error is balance is too low" do
       subject = Oystercard.new(minimum_balance - 1)
       expect { subject.touch_in }.to raise_error "Not enough balance to travel."
+    end
+
+    it "charges card on touch out" do
+      subject = Oystercard.new(balance_limit)
+      expect {subject.touch_out}.to change {subject.balance}.by(-minimum_fare)
     end
 
   end
