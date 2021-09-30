@@ -1,7 +1,7 @@
 require "oystercard"
 
 describe Oystercard do
-
+  let(:station) { double :station }
   let(:subject) {described_class.new(0)}
 
   balance_limit = Oystercard::BALANCE_LIMIT
@@ -35,29 +35,42 @@ describe Oystercard do
   #   end
   # end
 
-  describe 'touch in and out' do
-    
+  describe 'touch in' do
     it { is_expected.to respond_to(:in_journey?) }
 
     it "changes in_travel status to true" do
       subject = Oystercard.new(minimum_balance + 1)
-      subject.touch_in
-      expect(subject.in_journey?).to eq(subject.in_travel)
+      subject.touch_in(station)
+      expect(subject.in_journey?).to eq(true)
     end
+
+    it "expects card to remember entry station" do
+      subject = Oystercard.new(balance_limit)
+      expect(subject.touch_in(station)).to eq(station)
+    end
+
+  end
+
+  describe 'touch out' do
 
     it "changes in_travel status to false" do
       subject.touch_out
-      expect(subject.in_journey?).to eq(subject.in_travel)
+      expect(subject.in_journey?).to eq(false)
     end
 
     it "raises error is balance is too low" do
       subject = Oystercard.new(minimum_balance - 1)
-      expect { subject.touch_in }.to raise_error "Not enough balance to travel."
+      expect { subject.touch_in(station) }.to raise_error "Not enough balance to travel."
     end
 
     it "charges card on touch out" do
       subject = Oystercard.new(balance_limit)
       expect {subject.touch_out}.to change {subject.balance}.by(-minimum_fare)
+    end
+
+    it "expects card to forget entry station" do
+      subject = Oystercard.new(balance_limit)
+      expect(subject.touch_out).to eq(nil)
     end
 
   end
