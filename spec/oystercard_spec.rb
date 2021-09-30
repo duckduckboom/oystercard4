@@ -1,7 +1,8 @@
 require "oystercard"
 
 describe Oystercard do
-  let(:station) { double :station }
+  let(:entry_station) { double :entry_station }
+  let(:exit_station) { double :exit_station }
   let(:subject) {described_class.new(0)}
 
   balance_limit = Oystercard::BALANCE_LIMIT
@@ -40,13 +41,13 @@ describe Oystercard do
 
     it "changes in_travel status to true" do
       subject = Oystercard.new(minimum_balance + 1)
-      subject.touch_in(station)
+      subject.touch_in(entry_station)
       expect(subject.in_journey?).to eq(true)
     end
 
     it "expects card to remember entry station" do
       subject = Oystercard.new(balance_limit)
-      expect(subject.touch_in(station)).to eq(station)
+      expect(subject.touch_in(entry_station)).to eq(entry_station)
     end
 
   end
@@ -54,25 +55,46 @@ describe Oystercard do
   describe 'touch out' do
 
     it "changes in_travel status to false" do
-      subject.touch_out
+      subject.touch_out(exit_station)
       expect(subject.in_journey?).to eq(false)
     end
 
     it "raises error is balance is too low" do
       subject = Oystercard.new(minimum_balance - 1)
-      expect { subject.touch_in(station) }.to raise_error "Not enough balance to travel."
+      expect { subject.touch_in(exit_station) }.to raise_error "Not enough balance to travel."
     end
 
     it "charges card on touch out" do
       subject = Oystercard.new(balance_limit)
-      expect {subject.touch_out}.to change {subject.balance}.by(-minimum_fare)
+      expect {subject.touch_out(exit_station)}.to change {subject.balance}.by(-minimum_fare)
     end
 
-    it "expects card to forget entry station" do
+    # it "expects card to forget entry station" do
+    #   subject = Oystercard.new(balance_limit)
+    #   expect(subject.touch_out(exit_station)).to eq(nil)
+    # end
+
+  end
+
+  describe 'journey' do
+        
+    it 'stores exit station' do
       subject = Oystercard.new(balance_limit)
-      expect(subject.touch_out).to eq(nil)
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
+      expect(subject.exit_station).to eq exit_station
+    end
+    
+    it "new card has empty journey list" do
+      expect(subject.journey_history).to be_empty
     end
 
+    it "Touching in/out creates a journey" do
+      subject = Oystercard.new(balance_limit)
+      subject.touch_in(entry_station)
+      subject.touch_out(exit_station)
+      expect(subject.journey).to eq({ "Entry Station" => @entry_station, "Exit Station" => @exit_station})
+    end    
   end
 
 end    
